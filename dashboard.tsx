@@ -164,39 +164,51 @@ export default function Dashboard() {
     APPLE: 0,
   });
 
+  // **FIX: Use useFund balances converted to numbers for consistency**
+  const normalizedBalances = useMemo(() => ({
+    BTC: Number(formatEther(btcBalance)),
+    ETH: Number(formatEther(ethBalance)),
+    LTC: Number(formatEther(ltcBalance)),
+    GOLD: Number(formatEther(gldBalance)),
+    SILVER: Number(formatEther(slvBalance)),
+    TESLA: Number(formatEther(tslaBalance)),
+    APPLE: Number(formatEther(aaplBalance)),
+  }), [btcBalance, ethBalance, ltcBalance, gldBalance, slvBalance, tslaBalance, aaplBalance]);
+
   // Calculate portfolio values based on balances and prices
   useEffect(() => {
     const calculatePortfolio = () => {
       setPortfolio({
-        BTC: vaultBalances.BTC * (prices.BTC?.price || 0),
-        ETH: vaultBalances.ETH * (prices.ETH?.price || 0),
-        LTC: vaultBalances.LTC * (prices.LTC?.price || 0),
-        GOLD: vaultBalances.GOLD * (prices.GOLD?.price || 0),
-        SILVER: vaultBalances.SILVER * (prices.SILVER?.price || 0),
-        TESLA: vaultBalances.TESLA * (prices.TESLA?.price || 0),
-        APPLE: vaultBalances.APPLE * (prices.APPLE?.price || 0),
+        BTC: normalizedBalances.BTC * (prices.BTC?.price || 0),
+        ETH: normalizedBalances.ETH * (prices.ETH?.price || 0),
+        LTC: normalizedBalances.LTC * (prices.LTC?.price || 0),
+        GOLD: normalizedBalances.GOLD * (prices.GOLD?.price || 0),
+        SILVER: normalizedBalances.SILVER * (prices.SILVER?.price || 0),
+        TESLA: normalizedBalances.TESLA * (prices.TESLA?.price || 0),
+        APPLE: normalizedBalances.APPLE * (prices.APPLE?.price || 0),
       });
     };
 
     calculatePortfolio();
-  }, [prices, vaultBalances]);
+  }, [prices, normalizedBalances]);
 
-  // Calculate portfolio diversification data (MON balances, not USD) - memoized for proper reactivity
+  // **FIX: Calculate total using normalizedBalances**
   const total = useMemo(() => {
-    return Object.values(vaultBalances).reduce((a, b) => a + b, 0);
-  }, [vaultBalances]);
+    return Object.values(normalizedBalances).reduce((a, b) => a + b, 0);
+  }, [normalizedBalances]);
 
+  // **FIX: Calculate diversification using normalizedBalances**
   const diversification = useMemo(() => {
     return [
-      { name: 'BTC', value: vaultBalances.BTC, color: 'from-purple-500 to-purple-600', category: 'Crypto' },
-      { name: 'ETH', value: vaultBalances.ETH, color: 'from-purple-500 to-purple-600', category: 'Crypto' },
-      { name: 'LTC', value: vaultBalances.LTC, color: 'from-purple-500 to-purple-600', category: 'Crypto' },
-      { name: 'GOLD', value: vaultBalances.GOLD, color: 'from-yellow-500 to-yellow-600', category: 'Commodity' },
-      { name: 'SILVER', value: vaultBalances.SILVER, color: 'from-yellow-500 to-yellow-600', category: 'Commodity' },
-      { name: 'TESLA', value: vaultBalances.TESLA, color: 'from-blue-500 to-blue-600', category: 'Stock' },
-      { name: 'APPLE', value: vaultBalances.APPLE, color: 'from-blue-500 to-blue-600', category: 'Stock' },
+      { name: 'BTC', value: normalizedBalances.BTC, color: 'from-purple-500 to-purple-600', category: 'Crypto' },
+      { name: 'ETH', value: normalizedBalances.ETH, color: 'from-purple-500 to-purple-600', category: 'Crypto' },
+      { name: 'LTC', value: normalizedBalances.LTC, color: 'from-purple-500 to-purple-600', category: 'Crypto' },
+      { name: 'GOLD', value: normalizedBalances.GOLD, color: 'from-yellow-500 to-yellow-600', category: 'Commodity' },
+      { name: 'SILVER', value: normalizedBalances.SILVER, color: 'from-yellow-500 to-yellow-600', category: 'Commodity' },
+      { name: 'TESLA', value: normalizedBalances.TESLA, color: 'from-blue-500 to-blue-600', category: 'Stock' },
+      { name: 'APPLE', value: normalizedBalances.APPLE, color: 'from-blue-500 to-blue-600', category: 'Stock' },
     ].sort((a, b) => b.value - a.value);
-  }, [vaultBalances]);
+  }, [normalizedBalances]);
 
   // Log missing portfolio addresses on mount
   useEffect(() => {
@@ -989,15 +1001,6 @@ export default function Dashboard() {
           </div>
 
           {/* AI Activity + Risk Management Row */}
-          {/* 
-            AI INTEGRATION NOTES:
-            - Live market prices available in `prices` state
-            - Access via: prices.BTC.price, prices.ETH.price, prices.GOLD.price, etc.
-            - 24h change available for crypto: prices.BTC.change24h (percentage)
-            - Use for sentiment analysis, risk-on/risk-off signals
-            - Prices auto-refresh every 30 seconds
-            - Example: Compare BTC momentum vs ETH, or crypto vs commodities
-          */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
           {/* AI Activity Feed */}
           <div className="">
